@@ -688,8 +688,4 @@ class DHCPTest(DataplaneBaseTest):
         if self.test_params.has_key('other_client_port'):
             self.verify_dhcp_relay_pkt_on_other_client_port_with_no_padding(self.dest_mac_address, self.client_udp_src_port)
             self.verify_dhcp_relay_pkt_on_server_port_with_no_padding(self.dest_mac_address, self.client_udp_src_port)
-<<<<<<< HEAD
         
-=======
-
->>>>>>> 3d9a622718077f31c89633dfbda42501f5b23c0c
