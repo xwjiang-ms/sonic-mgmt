@@ -101,7 +101,7 @@ class DHCPTest(DataplaneBaseTest):
 
         self.hostname = self.test_params['hostname']
         self.verified_option82 = False
-
+        
         if self.test_params.has_key('other_client_port'):
             self.other_client_port = ast.literal_eval(self.test_params['other_client_port'])
 
