@@ -1,10 +1,13 @@
 import pytest
 import logging
+import os
+import time
 
 from tests.common.devices.base import RunAnsibleModuleFail
 from tests.common.utilities import wait_until
 from tests.common.utilities import skip_release
 from tests.common.utilities import wait
+from tests.common.reboot import reboot
 from .test_ro_user import ssh_remote_run
 from .utils import setup_tacacs_client
 
@@ -45,7 +48,7 @@ def chk_ssh_remote_run(localhost, remote_ip, username, password, cmd):
     return rc == 0
 
 
-def do_reboot(duthost, localhost, dutip="", rw_user="", rw_pass=""):
+def do_reboot(duthost, localhost, duthosts):
     # occasionally reboot command fails with some kernel error messages
     # Hence retry if needed.
     #
@@ -54,27 +57,33 @@ def do_reboot(duthost, localhost, dutip="", rw_user="", rw_pass=""):
     rebooted = False
 
     for i in range(retries):
-        # Regular reboot command would not work, as it would try to
-        # collect show tech, which will fail in RO state.
         #
         try:
-            if dutip:
-                chk_ssh_remote_run(localhost, dutip, rw_user, rw_pass, "sudo /sbin/reboot")
-            else:
-                duthost.shell("/sbin/reboot")
-
+            # Reboot DUT using reboot function instead of using ssh_remote_run.
+            # ssh_remote_run gets blocked due to console messages from reboot on DUT
+            # Do not wait for ssh as next step checks if ssh is stopped to ensure DUT is
+            # is rebooting.
+            reboot(duthost, localhost, wait_for_ssh=False)
             localhost.wait_for(host=duthost.mgmt_ip, port=22, state="stopped", delay=5, timeout=60)
             rebooted = True
             break
         except RunAnsibleModuleFail as e:
             logger.error("DUT did not go down, exception: {} attempt:{}/{}".
-                    format(repr(e), i, retries))
+                         format(repr(e), i, retries))
 
     assert rebooted, "Failed to reboot"
     localhost.wait_for(host=duthost.mgmt_ip, port=22, state="started", delay=10, timeout=300)
     wait(wait_time, msg="Wait {} seconds for system to be stable.".format(wait_time))
     assert wait_until(300, 20, 0, duthost.critical_services_fully_started), \
-            "All critical services should fully started!"
+        "All critical services should fully started!"
+    # If supervisor node is rebooted in chassis, linecards also will reboot.
+    # Check if all linecards are back up.
+    if duthost.is_supervisor_node():
+        for host in duthosts:
+            if host != duthost:
+                logger.info("checking if {} critical services are up".format(host.hostname))
+                assert wait_until(300, 20, 0, host.critical_services_fully_started), \
+                    "All critical services of {} should fully started!".format(host.hostname)
 
 
 def do_setup_tacacs(ptfhost, duthost, tacacs_creds):
@@ -90,8 +99,8 @@ def do_setup_tacacs(ptfhost, duthost, tacacs_creds):
 
 
 def do_check_clean_state(duthost):
-    for i in [ "upper", "work", "log" ]:
-        res = duthost.shell("ls -l {}".format(os.path.join(MOUNT_DIR,i)), module_ignore_errors=True)
+    for i in ["upper", "work", "log"]:
+        res = duthost.shell("ls -l {}".format(os.path.join(MOUNT_DIR, i)), module_ignore_errors=True)
         if res["rc"] == 0:
             # Log current state in-depth
             duthost.shell("find {} -ls".format(MOUNT_DIR), module_ignore_errors=True)
@@ -108,7 +117,7 @@ def fetch_into_file(localhost, remote_ip, rwuser, rwpass, src_file, dst_file):
 
 
 def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
-        tacacs_creds, check_tacacs):
+                 tacacs_creds, check_tacacs):
     """test tacacs rw user
     """
     duthost = duthosts[enum_rand_one_per_hwsku_hostname]
@@ -127,8 +136,8 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         # reboot to clear it
         #
         logger.info("PRETEST: reboot {} to restore system state".
-                format(enum_rand_one_per_hwsku_hostname))
-        do_reboot(duthost, localhost)
+                    format(enum_rand_one_per_hwsku_hostname))
+        do_reboot(duthost, localhost, duthosts)
         assert do_check_clean_state(duthost), "state not good even after reboot"
         do_setup_tacacs(ptfhost, duthost, tacacs_creds)
 
@@ -141,7 +150,7 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
     logger.info("del user {} done".format(ro_user))
 
     res = duthost.shell("ls -l /home/{}".format(ro_user), module_ignore_errors=True)
-    assert  res["rc"] != 0, "Failed to remove ro user dir"
+    assert res["rc"] != 0, "Failed to remove ro user dir"
 
     # Ensure rw user can get in, as we need this to be able to reboot
     ret = chk_ssh_remote_run(localhost, dutip, rw_user, rw_pass, "ls")
@@ -151,7 +160,7 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         # Redirect logs to tmpfs
         #
         duthost.shell("sudo mkdir {}".format(LOG_DIR))
-        
+
         conf_path = os.path.join(os.path.dirname(
             os.path.abspath(__file__)), "000-ro_disk.conf")
         duthost.copy(src=conf_path, dest="/etc/rsyslog.d/000-ro_disk.conf")
@@ -166,7 +175,11 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         time.sleep(2)
 
         # Remove file, so the reboot at the end of test will revert this logs redirect.
-        duthost.shell("rm /etc/rsyslog.d/000-ro_disk.conf") 
+        duthost.shell("rm /etc/rsyslog.d/000-ro_disk.conf")
+
+        # Enable AAA failthrough authentication so that reboot function can be used
+        # to reboot DUT
+        duthost.shell("config aaa authentication failthrough enable")
 
         # Set disk in RO state
         simulate_ro(duthost)
@@ -178,9 +191,9 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         #   Monit does not start upon boot for 5 minutes.
         #   Note: Monit invokes disk check every 5 cycles/minutes
         #   We need to wait solid +10mins before concluding.
-        #         
+        #
         res = wait_until(900, 20, 0, chk_ssh_remote_run, localhost, dutip,
-                ro_user, ro_pass, "cat /etc/passwd")
+                         ro_user, ro_pass, "cat /etc/passwd")
         logger.info("res={}".format(res))
 
         chk_ssh_remote_run(localhost, dutip, rw_user, rw_pass, "sudo find {} -ls".format(MOUNT_DIR))
@@ -191,19 +204,17 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         if not os.path.exists(DATA_DIR):
             os.mkdir(DATA_DIR)
 
-
         # Fetch files of interest
         #
-        for f in [ "/etc/passwd", os.path.join(LOG_DIR, "auth.log"),
-                os.path.join(LOG_DIR, "syslog")]:
+        for f in ["/etc/passwd", os.path.join(LOG_DIR, "auth.log"),
+                  os.path.join(LOG_DIR, "syslog")]:
             fetch_into_file(localhost, dutip, rw_user, rw_pass, f,
-                    os.path.join(DATA_DIR, os.path.basename(f)))
+                            os.path.join(DATA_DIR, os.path.basename(f)))
         assert res, "Failed to ssh as ro user"
 
     finally:
         logger.debug("START: reboot {} to restore disk RW state".
-                format(enum_rand_one_per_hwsku_hostname))
-        do_reboot(duthost, localhost, dutip, rw_user, rw_pass)
-        assert wait_until(600, 20, 0, duthost.critical_services_fully_started), "Not all critical services are fully started"
+                     format(enum_rand_one_per_hwsku_hostname))
+        do_reboot(duthost, localhost, duthosts)
         logger.debug("  END: reboot {} to restore disk RW state".
-                format(enum_rand_one_per_hwsku_hostname))
+                     format(enum_rand_one_per_hwsku_hostname))

@@ -15,14 +15,14 @@ class OnyxHost(AnsibleHostBase):
 
     def __init__(self, ansible_adhoc, hostname, user, passwd, gather_facts=False):
         AnsibleHostBase.__init__(self, ansible_adhoc, hostname, connection="network_cli")
-        evars = {'ansible_connection':'network_cli',
-                'ansible_network_os':'onyx',
-                'ansible_user': user,
-                'ansible_password': passwd,
-                'ansible_ssh_user': user,
-                'ansible_ssh_pass': passwd,
-                'ansible_become_method': 'enable'
-                }
+        evars = {'ansible_connection': 'network_cli',
+                 'ansible_network_os': 'onyx',
+                 'ansible_user': user,
+                 'ansible_password': passwd,
+                 'ansible_ssh_user': user,
+                 'ansible_ssh_pass': passwd,
+                 'ansible_become_method': 'enable'
+                 }
 
         self.host.options['variable_manager'].extra_vars.update(evars)
         self.localhost = ansible_adhoc(inventory='localhost', connection='local', host_pattern="localhost")["localhost"]
@@ -41,6 +41,11 @@ class OnyxHost(AnsibleHostBase):
         logging.info('Shut interface [%s]' % interface_name)
         return out
 
+    def shutdown_multiple(self, interfaces):
+        for interface in interfaces:
+            out = self.shutdown(interface)
+        return out
+
     def no_shutdown(self, interface_name):
         out = self.host.onyx_config(
             lines=['no shutdown'],
@@ -48,13 +53,23 @@ class OnyxHost(AnsibleHostBase):
         logging.info('No shut interface [%s]' % interface_name)
         return out
 
+    def no_shutdown_multiple(self, interfaces):
+        for interface in interfaces:
+            out = self.no_shutdown(interface)
+        return out
+
     def check_intf_link_state(self, interface_name):
         show_int_result = self.host.onyx_command(
-            commands=['show interfaces ethernet {} | include "Operational state"'.format(interface_name)])[self.hostname]
+            commands=['show interfaces ethernet {} | include "Operational state"'
+                      .format(interface_name)])[self.hostname]
         return 'Up' in show_int_result['stdout'][0]
 
     def command(self, cmd):
         out = self.host.onyx_command(commands=[cmd])
+        return out
+
+    def config(self, cmd):
+        out = self.host.onyx_config(commands=[cmd])
         return out
 
     def set_interface_lacp_rate_mode(self, interface_name, mode):
@@ -68,9 +83,10 @@ class OnyxHost(AnsibleHostBase):
         """
         Execute ansible playbook with specified parameters
         """
-        playbook_template = 'cd {ansible_path}; ansible-playbook {playbook} -i {inventory} -l {fanout_host} --extra-vars \'{extra_vars}\' -vvvvv'
+        playbook_template = 'cd {ansible_path}; ansible-playbook {playbook} -i {inventory} \
+                            -l {fanout_host} --extra-vars \'{extra_vars}\' -vvvvv'
         cli_cmd = playbook_template.format(ansible_path=ansible_root, playbook=ansible_playbook, inventory=inventory,
-            fanout_host=self.hostname, extra_vars=json.dumps(kwargs))
+                                           fanout_host=self.hostname, extra_vars=json.dumps(kwargs))
         res = self.localhost.shell(cli_cmd)
 
         if res["localhost"]["rc"] != 0:
