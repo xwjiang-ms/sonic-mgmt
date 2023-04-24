@@ -4,6 +4,7 @@ import sys
 
 def main():
     stage_files = sys.argv[1:]
+    retval = 0
     for stage_file in stage_files:
         conditions = []
         with open(stage_file, 'r') as f:
@@ -16,9 +17,10 @@ def main():
             sorted_conditions = conditions[:]
             sorted_conditions.sort()
             if conditions != sorted_conditions:
-                sys.exit(-1)
-    sys.exit(0)
+                print("The entries in tests/common/plugins/conditional_mark/tests_mark_conditions*.yaml are not sorted in alphabetic order.")
+                retval = 1
+    return retval
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

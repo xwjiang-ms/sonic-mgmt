@@ -15,3 +15,8 @@ repos:
     hooks:
     -   id: flake8
         args: ["--max-line-length=120"]
+
+-   repo: https://github.com/xwjiang-ms/sonic-mgmt
+    rev: 1.0.0
+    hooks:
+      - id: check-yml-sort
