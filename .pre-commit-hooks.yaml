@@ -1,0 +1,6 @@
+-   id: check-yml-sort
+    name: check yaml sort
+    description: checks yaml files for sort.
+    entry: check-yml-sort
+    language: python
+    types: [yaml]
