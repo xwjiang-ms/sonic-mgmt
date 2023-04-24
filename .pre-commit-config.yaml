@@ -17,6 +17,6 @@ repos:
         args: ["--max-line-length=120"]
 
 -   repo: https://github.com/xwjiang-ms/sonic-mgmt
-    rev: c60aac71f0a8bdd41d2f8085ee23a5d2d8abd410
+    rev: bd43faf9cdba8e699899bf7220d9657693eea66b
     hooks:
     -   id: check-yml-sort
