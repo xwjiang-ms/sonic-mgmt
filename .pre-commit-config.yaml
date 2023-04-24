@@ -19,4 +19,4 @@ repos:
 -   repo: https://github.com/xwjiang-ms/sonic-mgmt
     rev: 016386b7b6be05d9e00126477bca636891045b42
     hooks:
-      - id: check-yml-sort
+    -   id: check-yml-sort
