@@ -1,9 +1,8 @@
 import re
 import sys
-from typing import Sequence
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main():
     stage_files = sys.argv[1:]
     retval = 0
     for stage_file in stage_files:
