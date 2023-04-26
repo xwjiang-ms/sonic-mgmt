@@ -1,6 +1,6 @@
--   id: check-yml-sort
-    name: check yaml sort
-    description: checks yaml files for sort.
-    entry: check-yml-sort
+-   id: check-conditional-mark-sort
+    name: check conditional mark sort
+    description: check conditional mark yaml file sort from A to Z.
+    entry: check-conditional-mark-sort
     language: python
     types: [yaml]
