@@ -17,6 +17,6 @@ repos:
         args: ["--max-line-length=120"]
 
 -   repo: https://github.com/xwjiang-ms/sonic-mgmt
-    rev: 1.0.32.pre_commit
+    rev: 1.0.33+pre_commit
     hooks:
     -   id: check-conditional-mark-sort
