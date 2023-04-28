@@ -1,7 +1,7 @@
 # Local pre-commit hook config
 [project]
-name = "Some pre commit hooks"
-version = "1.0.36+pre_commit"
+name = "sonic-mgmt-pre-commit-hooks"
+version = "1.0.37+pre_commit"
 description = "Some hooks for pre-commit in sonic-mgmt repo."
 repository = "https://github.com/xwjiang-ms/sonic-mgmt"
 classifiers = [
