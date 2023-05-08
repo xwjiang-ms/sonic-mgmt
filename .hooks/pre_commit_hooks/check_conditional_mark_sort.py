@@ -18,7 +18,8 @@ def main():
                 sorted_conditions = conditions[:]
                 sorted_conditions.sort()
                 if conditions != sorted_conditions:
-                    print("line: {}".format(line))
+                    print("conditions: {}".format(conditions))
+                    print("sorted_conditions: {}".format(sorted_conditions))
                     print("The entries in tests/common/plugins/conditional_mark/tests_mark_conditions*.yaml "
                           "are not sorted in alphabetic order.")
                     retval = 1
