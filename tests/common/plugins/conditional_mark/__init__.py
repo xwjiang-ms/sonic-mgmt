@@ -44,7 +44,7 @@ def pytest_addoption(parser):
         dest='customize_inventory_file',
         default=False,
         help="Location of your custom inventory file. "
-             "If it is not specified, and inv_name not in testbed.csv, 'lab' will be used")
+             "If it is not specified, and inv_name not in testbed.yaml, 'lab' will be used")
 
     parser.addoption(
         '--dynamic_update_skip_reason',

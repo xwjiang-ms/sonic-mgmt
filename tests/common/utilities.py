@@ -395,7 +395,7 @@ def get_test_server_vars(inv_files, server):
     """Use ansible's VariableManager and InventoryManager to get value of variables of test server belong to specified
     server group.
 
-    In testbed.csv file, we can get the server name of each test setup under the 'server' column. For example
+    In testbed.yaml file, we can get the server name of each test setup under the 'server' column. For example
     'server_1', 'server_2', etc. This server name is indeed a group name in used ansible inventory files. This group
     contains children groups for test server and VMs. This function is try to just return the variables of test servers
     belong to the specified server group.
@@ -403,7 +403,7 @@ def get_test_server_vars(inv_files, server):
     Args:
         inv_files (list or string): List of inventory file pathes, or string of a single inventory file path. In tests,
             it can be get from request.config.getoption("ansible_inventory").
-        server (string): Server of test setup in testbed.csv file.
+        server (string): Server of test setup in testbed.yaml file.
 
     Returns:
         dict or None: dict if the host is found, None if the host is not found.
@@ -425,7 +425,7 @@ def get_test_server_visible_vars(inv_files, server):
     """Use ansible's VariableManager and InventoryManager to get value of variables visible to the specified server
     group.
 
-    In testbed.csv file, we can get the server name of each test setup under the 'server' column. For example
+    In testbed.yaml file, we can get the server name of each test setup under the 'server' column. For example
     'server_1', 'server_2', etc. This server name is indeed a group name in used ansible inventory files. This group
     contains children groups for test server and VMs. This function is try to just return the variables visible to
     the server group.
@@ -433,7 +433,7 @@ def get_test_server_visible_vars(inv_files, server):
     Args:
         inv_files (list or string): List of inventory file pathes, or string of a single inventory file path. In tests,
             it can be get from request.config.getoption("ansible_inventory").
-        server (string): Server of test setup in testbed.csv file.
+        server (string): Server of test setup in testbed.yaml file.
 
     Returns:
         dict or None: dict if the host is found, None if the host is not found.

@@ -17,8 +17,8 @@ Description:
        When deploy testbed topology with VM connected to SONiC,
        gather neighbor VMs info for generating SONiC minigraph file
  options:
-    base_vm:  base vm name defined in testbed.csv for the deployed topology; required: True
-    topo:     topology name defined in testbed.csv for the deployed topology; required: True
+    base_vm:  base vm name defined in testbed.yaml for the deployed topology; required: True
+    topo:     topology name defined in testbed.yaml for the deployed topology; required: True
     vm_file:  the virtual machine file path; default: 'veos'
 
 Ansible_facts:

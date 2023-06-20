@@ -75,7 +75,7 @@ def test_ser(duthosts, rand_one_dut_hostname, enum_asic_index):
               file location is marked.  The test is invoked using:
 
               pytest platform/broadcom/test_ser.py --testbed=vms12-t0-s6000-1 \
-              --inventory=../ansible/str --testbed_file=../ansible/testbed.csv \
+              --inventory=../ansible/str --testbed_file=../ansible/testbed.yaml \
               --host-pattern=vms12-t0-s6000-1 --module-path=../ansible/library
 
     @param duthost: Ansible framework testbed DUT device
