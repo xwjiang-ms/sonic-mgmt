@@ -8,628 +8,438 @@ schedules:
     displayName: Baseline test Scheduler
     branches:
       include:
-        - internal
+        - master
     always: true
 
-resources:
-  repositories:
-  - repository: acs-buildimage
-    type: git
-    name: One/Networking-acs-buildimage
-    ref: internal
-  - repository: buildimage
-    type: github
-    name: sonic-net/sonic-buildimage
-    ref: master
-    endpoint: sonic-net
-  - repository: sonic-mgmt
-    type: github
-    name: sonic-net/sonic-mgmt
-    ref: master
-    endpoint: sonic-net
-
 stages:
-- stage: BuildVS
-  pool: sonic-image-builder-1ES
-  variables:
-    SONIC_DPKG_CACHE_METHOD: 'rcache'
-    SONIC_VERSION_CONTROL_COMPONENTS: 'deb,py2,py3,web,git,docker'
-    SONIC_BUILD_JOBS: 4
-    MIRROR_SNAPSHOT: 'y'
-    DEFAULT_CONTAINER_REGISTRY: 'publicmirror.azurecr.io'
-    ENABLE_DOCKER_BASE_PULL: 'y'
-    INCLUDE_RESTAPI: 'y'
-  jobs:
-  - template: .azure-pipelines/azure-pipelines-job-groups.yml@acs-buildimage
-    parameters:
-      preSteps:
-        - template: .pipelines/prepare_agent.yml@acs-buildimage
-        - template: .azure-pipelines/cleanup.yml@acs-buildimage
-        - checkout: self
-          submodules: recursive
-          clean: true
-        - bash: |
-            set -e
-            git show HEAD
-            output=n
-            [[ "$(git log -n 1 --format=%aN)" == "Project Collection Build Service (msazure)" ]] && output=y && echo "Automation PR."
-            echo "##vso[task.setvariable variable=autoPR;isOutput=true]$output"
-          name: checkAutoPR
-      postSteps:
-        - publish: $(Build.ArtifactStagingDirectory)
-          artifact: 'sonic-buildimage.$(GROUP_NAME)'
-          displayName: "Archive sonic image"
-        - publish: $(Build.ArtifactStagingDirectory)
-          condition: or(failed(), canceled())
-          artifact: 'sonic-buildimage.$(GROUP_NAME)$(System.JobAttempt)'
-          displayName: "Archive failed sonic image"
-      jobGroups:
-        - name: vs
-          script: |
-            set -ex
-            make PLATFORM=vs PLATFORM_ARCH=amd64 configure
-            make BUILD_MULTIASIC_KVM=y SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/vs target/docker-sonic-vs.gz target/sonic-vs.img.gz target/docker-ptf.gz target/docker-ptf-sai.gz
-            mv target $(Build.ArtifactStagingDirectory)
-
-- stage: Build
-  pool: sonic-image-builder-1ES
-  dependsOn: []
-  variables:
-    SONIC_DPKG_CACHE_METHOD: 'rcache'
-    SONIC_VERSION_CONTROL_COMPONENTS: 'deb,py2,py3,web,git,docker'
-    SONIC_BUILD_JOBS: 4
-    ENABLE_SYNCD_RPC: 'y'
-    MIRROR_SNAPSHOT: 'y'
-    DEFAULT_CONTAINER_REGISTRY: 'publicmirror.azurecr.io'
-    ENABLE_DOCKER_BASE_PULL: 'y'
-    INCLUDE_RESTAPI: 'y'
-  jobs:
-  - template: .azure-pipelines/azure-pipelines-job-groups.yml@acs-buildimage
-    parameters:
-      preSteps:
-        - template: .pipelines/prepare_agent.yml@acs-buildimage
-        - template: .azure-pipelines/cleanup.yml@acs-buildimage
-        - checkout: self
-          submodules: recursive
-          clean: true
-      postSteps:
-        - publish: $(Build.ArtifactStagingDirectory)
-          artifact: 'sonic-buildimage.$(GROUP_NAME)'
-          displayName: "Archive sonic image"
-        - publish: $(System.DefaultWorkingDirectory)/target
-          condition: or(failed(), canceled())
-          artifact: 'sonic-buildimage.$(GROUP_NAME)$(System.JobAttempt)'
-          displayName: "Archive failed sonic image"
-      jobGroups:
-        - name: broadcom
-          script: |
-            set -ex
-            make PLATFORM=broadcom PLATFORM_ARCH=amd64 configure
-            make SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/broadcom target/docker-syncd-brcm-rpc.gz target/sonic-broadcom.bin target/sonic-aboot-broadcom.swi
-            mv target $(Build.ArtifactStagingDirectory)
-        - name: mellanox
-          script: |
-            set -ex
-            make PLATFORM=mellanox PLATFORM_ARCH=amd64 configure
-            make SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/mellanox INCLUDE_VNET_MONITOR=y target/sonic-mellanox.bin target/docker-syncd-mlnx-rpc.gz
-            mv target $(Build.ArtifactStagingDirectory)
-        - name: barefoot
-          condition: ne(variables['SKIP_BAREFOOT'], 'y')
-          script: |
-            set -ex
-            sudo modprobe overlay
-            make PLATFORM=barefoot PLATFORM_ARCH=amd64 configure
-            make SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/barefoot target/sonic-barefoot.bin target/sonic-aboot-barefoot.swi target/docker-syncd-bfn-rpc.gz
-            mv target $(Build.ArtifactStagingDirectory)
-        - name: marvell-armhf
-          pool: sonic-armhf
-          timeoutInMinutes: 2160
-          variables:
-            PLATFORM_ARCH: armhf
-            # official build didn't enable RPC
-            ENABLE_SYNCD_RPC: 'n'
-          script: |
-            set -ex
-            make PLATFORM=marvell-armhf PLATFORM_ARCH=armhf configure
-            make SONIC_DPKG_CACHE_SOURCE=/nfs/dpkg_cache/armhf target/sonic-marvell-armhf.bin
-            mv target $(Build.ArtifactStagingDirectory)
-
 - stage: Test_round_1
-  dependsOn: BuildVS
-  condition: in(dependencies.BuildVS.result, 'Succeeded', 'SucceededWithIssues')
-  variables:
-    - group: SONiC-Elastictest
-    - name: inventory
-      value: veos_vtb
-    - name: testbed_file
-      value: vtestbed.yaml
-
-  # For every test job:
-  # continueOnError: false means it's a required test job and will block merge if it fails
-  # continueOnError: true means it's an optional test job and will not block merge even though it fails(unless a required test job depends on its result)
-
   jobs:
   - job: t0_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0
-          MIN_WORKER: $(T0_INSTANCE_NUM)
-          MAX_WORKER: $(T0_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: t1_lag_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
-    displayName: "kvmtest-t1-lag by Elastictest"
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t1-lag
-          MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: sonic_t0_elastictest
-    displayName: "kvmtest-t0-sonic by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          TEST_SET: t0-sonic
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
-          VM_TYPE: vsonic
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t0
+        MIN_WORKER: $(T0_INSTANCE_NUM)
+        MAX_WORKER: $(T0_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: t0_2vlans_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0-2vlans by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+    - template: .azure-pipelines/run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MGMT_BRANCH: "internal"
-        MGMT_URL: $(MGMT_INT_URL)
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
-        STOP_ON_FAILURE: False
-        EXPECTED_RESULT: "SUCCESS"
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
+
+  - job: t1_lag_elastictest
+    displayName: "kvmtest-t1-lag by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t1-lag
+        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: dualtor_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-dualtor-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
           MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
           MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
           MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           NUM_ASIC: 4
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: sonic_t0_elastictest
+    displayName: "kvmtest-t0-sonic by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: t0-64-32
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          TEST_SET: t0-sonic
+          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
+          VM_TYPE: vsonic
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: dpu_elastictest
+    displayName: "kvmtest-dpu by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: dpu
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
 - stage: Test_round_2
-  dependsOn: BuildVS
-  condition: in(dependencies.BuildVS.result, 'Succeeded', 'SucceededWithIssues')
-  variables:
-    - group: SONiC-Elastictest
-    - name: inventory
-      value: veos_vtb
-    - name: testbed_file
-      value: vtestbed.yaml
-
-  # For every test job:
-  # continueOnError: false means it's a required test job and will block merge if it fails
-  # continueOnError: true means it's an optional test job and will not block merge even though it fails(unless a required test job depends on its result)
-
   jobs:
   - job: t0_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0
-          MIN_WORKER: $(T0_INSTANCE_NUM)
-          MAX_WORKER: $(T0_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: t1_lag_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
-    displayName: "kvmtest-t1-lag by Elastictest"
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t1-lag
-          MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: sonic_t0_elastictest
-    displayName: "kvmtest-t0-sonic by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          TEST_SET: t0-sonic
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
-          VM_TYPE: vsonic
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t0
+        MIN_WORKER: $(T0_INSTANCE_NUM)
+        MAX_WORKER: $(T0_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: t0_2vlans_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0-2vlans by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+    - template: .azure-pipelines/run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MGMT_BRANCH: "internal"
-        MGMT_URL: $(MGMT_INT_URL)
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
-        STOP_ON_FAILURE: False
-        EXPECTED_RESULT: "SUCCESS"
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
+
+  - job: t1_lag_elastictest
+    displayName: "kvmtest-t1-lag by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t1-lag
+        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: dualtor_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-dualtor-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
           MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
           MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
           MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           NUM_ASIC: 4
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: sonic_t0_elastictest
+    displayName: "kvmtest-t0-sonic by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: t0-64-32
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          TEST_SET: t0-sonic
+          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
+          VM_TYPE: vsonic
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: dpu_elastictest
+    displayName: "kvmtest-dpu by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: dpu
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
 - stage: Test_round_3
-  dependsOn: BuildVS
-  condition: in(dependencies.BuildVS.result, 'Succeeded', 'SucceededWithIssues')
-  variables:
-    - group: SONiC-Elastictest
-    - name: inventory
-      value: veos_vtb
-    - name: testbed_file
-      value: vtestbed.yaml
-
-  # For every test job:
-  # continueOnError: false means it's a required test job and will block merge if it fails
-  # continueOnError: true means it's an optional test job and will not block merge even though it fails(unless a required test job depends on its result)
-
   jobs:
   - job: t0_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0
-          MIN_WORKER: $(T0_INSTANCE_NUM)
-          MAX_WORKER: $(T0_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: t1_lag_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
-    displayName: "kvmtest-t1-lag by Elastictest"
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t1-lag
-          MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: sonic_t0_elastictest
-    displayName: "kvmtest-t0-sonic by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          TEST_SET: t0-sonic
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
-          VM_TYPE: vsonic
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t0
+        MIN_WORKER: $(T0_INSTANCE_NUM)
+        MAX_WORKER: $(T0_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: t0_2vlans_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0-2vlans by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+    - template: .azure-pipelines/run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MGMT_BRANCH: "internal"
-        MGMT_URL: $(MGMT_INT_URL)
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
-        STOP_ON_FAILURE: False
-        EXPECTED_RESULT: "SUCCESS"
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
+
+  - job: t1_lag_elastictest
+    displayName: "kvmtest-t1-lag by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t1-lag
+        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: dualtor_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-dualtor-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
           MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
           MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
           MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           NUM_ASIC: 4
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: sonic_t0_elastictest
+    displayName: "kvmtest-t0-sonic by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: t0-64-32
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          TEST_SET: t0-sonic
+          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
+          VM_TYPE: vsonic
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: dpu_elastictest
+    displayName: "kvmtest-dpu by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: dpu
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
 - stage: Test_round_4
-  dependsOn: BuildVS
-  condition: in(dependencies.BuildVS.result, 'Succeeded', 'SucceededWithIssues')
-  variables:
-    - group: SONiC-Elastictest
-    - name: inventory
-      value: veos_vtb
-    - name: testbed_file
-      value: vtestbed.yaml
-
-  # For every test job:
-  # continueOnError: false means it's a required test job and will block merge if it fails
-  # continueOnError: true means it's an optional test job and will not block merge even though it fails(unless a required test job depends on its result)
-
   jobs:
   - job: t0_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0
-          MIN_WORKER: $(T0_INSTANCE_NUM)
-          MAX_WORKER: $(T0_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: t1_lag_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
-    displayName: "kvmtest-t1-lag by Elastictest"
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t1-lag
-          MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
-
-  - job: sonic_t0_elastictest
-    displayName: "kvmtest-t0-sonic by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
-    timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
-    steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
-        parameters:
-          TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          TEST_SET: t0-sonic
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
-          VM_TYPE: vsonic
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t0
+        MIN_WORKER: $(T0_INSTANCE_NUM)
+        MAX_WORKER: $(T0_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: t0_2vlans_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-t0-2vlans by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+    - template: .azure-pipelines/run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
         MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
         MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MGMT_BRANCH: "internal"
-        MGMT_URL: $(MGMT_INT_URL)
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
-        STOP_ON_FAILURE: False
-        EXPECTED_RESULT: "SUCCESS"
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
+
+  - job: t1_lag_elastictest
+    displayName: "kvmtest-t1-lag by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+    - template: .azure-pipelines/run-test-elastictest-template.yml
+      parameters:
+        TOPOLOGY: t1-lag
+        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        KVM_IMAGE_BRANCH: "master"
+        MGMT_BRANCH: "master"
 
   - job: dualtor_elastictest
-    pool:
-      vmImage: 'ubuntu-20.04'
     displayName: "kvmtest-dualtor-t0 by Elastictest"
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
           MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
           MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
-    pool:
-      vmImage: 'ubuntu-20.04'
     timeoutInMinutes: 240
-    continueOnError: $[ eq(stageDependencies.BuildVS.vs.outputs['checkAutoPR.autoPR'], 'y') ]
+    continueOnError: false
+    pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml@sonic-mgmt
+      - template: .azure-pipelines/run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
           MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
           NUM_ASIC: 4
-          MGMT_BRANCH: "internal"
-          MGMT_URL: $(MGMT_INT_URL)
-          STOP_ON_FAILURE: False
-          EXPECTED_RESULT: "SUCCESS"
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: sonic_t0_elastictest
+    displayName: "kvmtest-t0-sonic by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: t0-64-32
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          TEST_SET: t0-sonic
+          COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
+          VM_TYPE: vsonic
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
+
+  - job: dpu_elastictest
+    displayName: "kvmtest-dpu by Elastictest"
+    timeoutInMinutes: 240
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+      - template: .azure-pipelines/run-test-elastictest-template.yml
+        parameters:
+          TOPOLOGY: dpu
+          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          KVM_IMAGE_BRANCH: "master"
+          MGMT_BRANCH: "master"
