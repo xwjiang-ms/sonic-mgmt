@@ -12,7 +12,28 @@ schedules:
     always: true
 
 stages:
+- stage: Pre_test
+  variables:
+  - group: GIT_SECRETS
+  jobs:
+  - job: validate_test_cases
+    displayName: "Validate Test Cases"
+    timeoutInMinutes: 20
+    continueOnError: false
+    pool: ubuntu-20.04
+    steps:
+    - template: .azure-pipelines/pytest-collect-only.yml
+
 - stage: Test_round_1
+  dependsOn: Pre_test
+  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  variables:
+  - group: SONiC-Elastictest
+  - name: inventory
+    value: veos_vtb
+  - name: testbed_file
+    value: vtestbed.yaml
+  - group: GIT_SECRETS
   jobs:
   - job: t0_elastictest
     displayName: "kvmtest-t0 by Elastictest"
@@ -121,6 +142,15 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_2
+  dependsOn: Pre_test
+  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  variables:
+  - group: SONiC-Elastictest
+  - name: inventory
+    value: veos_vtb
+  - name: testbed_file
+    value: vtestbed.yaml
+  - group: GIT_SECRETS
   jobs:
   - job: t0_elastictest
     displayName: "kvmtest-t0 by Elastictest"
@@ -229,6 +259,15 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_3
+  dependsOn: Pre_test
+  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  variables:
+  - group: SONiC-Elastictest
+  - name: inventory
+    value: veos_vtb
+  - name: testbed_file
+    value: vtestbed.yaml
+  - group: GIT_SECRETS
   jobs:
   - job: t0_elastictest
     displayName: "kvmtest-t0 by Elastictest"
@@ -337,6 +376,15 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_4
+  dependsOn: Pre_test
+  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  variables:
+  - group: SONiC-Elastictest
+  - name: inventory
+    value: veos_vtb
+  - name: testbed_file
+    value: vtestbed.yaml
+  - group: GIT_SECRETS
   jobs:
   - job: t0_elastictest
     displayName: "kvmtest-t0 by Elastictest"
