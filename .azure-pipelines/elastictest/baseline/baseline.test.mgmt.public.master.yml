@@ -20,11 +20,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
-        MIN_WORKER: $(T0_INSTANCE_NUM)
-        MAX_WORKER: $(T0_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -34,12 +34,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
-        MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
@@ -50,11 +50,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t1-lag
-        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -64,11 +64,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
-          MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -79,12 +79,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
-          MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
-          MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           NUM_ASIC: 4
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -95,11 +95,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           TEST_SET: t0-sonic
           COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
           VM_TYPE: vsonic
@@ -112,11 +112,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dpu
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
 
@@ -128,11 +128,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
-        MIN_WORKER: $(T0_INSTANCE_NUM)
-        MAX_WORKER: $(T0_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -142,12 +142,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
-        MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
@@ -158,11 +158,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t1-lag
-        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -172,11 +172,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
-          MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -187,12 +187,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
-          MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
-          MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           NUM_ASIC: 4
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -203,11 +203,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           TEST_SET: t0-sonic
           COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
           VM_TYPE: vsonic
@@ -220,11 +220,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dpu
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
 
@@ -236,11 +236,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
-        MIN_WORKER: $(T0_INSTANCE_NUM)
-        MAX_WORKER: $(T0_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -250,12 +250,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
-        MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
@@ -266,11 +266,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t1-lag
-        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -280,11 +280,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
-          MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -295,12 +295,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
-          MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
-          MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           NUM_ASIC: 4
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -311,11 +311,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           TEST_SET: t0-sonic
           COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
           VM_TYPE: vsonic
@@ -328,11 +328,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dpu
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
 
@@ -344,11 +344,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
-        MIN_WORKER: $(T0_INSTANCE_NUM)
-        MAX_WORKER: $(T0_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -358,12 +358,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t0
         TEST_SET: t0-2vlans
-        MIN_WORKER: $(T0_2VLANS_INSTANCE_NUM)
-        MAX_WORKER: $(T0_2VLANS_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         DEPLOY_MG_EXTRA_PARAMS: "-e vlan_config=two_vlan_a"
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
@@ -374,11 +374,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-    - template: .azure-pipelines/run-test-elastictest-template.yml
+    - template: ../../run-test-elastictest-template.yml
       parameters:
         TOPOLOGY: t1-lag
-        MIN_WORKER: $(T1_LAG_INSTANCE_NUM)
-        MAX_WORKER: $(T1_LAG_INSTANCE_NUM)
+        MIN_WORKER: 5
+        MAX_WORKER: 5
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
 
@@ -388,11 +388,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dualtor
-          MIN_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
-          MAX_WORKER: $(T0_DUALTOR_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           COMMON_EXTRA_PARAMS: "--disable_loganalyzer "
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -403,12 +403,12 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t1-8-lag
           TEST_SET: multi-asic-t1-lag
-          MIN_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
-          MAX_WORKER: $(MULTI_ASIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           NUM_ASIC: 4
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
@@ -419,11 +419,11 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: t0-64-32
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           TEST_SET: t0-sonic
           COMMON_EXTRA_PARAMS: "--neighbor_type=sonic "
           VM_TYPE: vsonic
@@ -436,10 +436,10 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     steps:
-      - template: .azure-pipelines/run-test-elastictest-template.yml
+      - template: ../../run-test-elastictest-template.yml
         parameters:
           TOPOLOGY: dpu
-          MIN_WORKER: $(T0_SONIC_INSTANCE_NUM)
-          MAX_WORKER: $(T0_SONIC_INSTANCE_NUM)
+          MIN_WORKER: 5
+          MAX_WORKER: 5
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
