@@ -41,8 +41,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -58,8 +57,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -77,8 +75,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -94,8 +91,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -112,8 +108,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -131,8 +126,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -151,8 +145,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -181,8 +174,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -198,8 +190,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -217,8 +208,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -234,8 +224,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -252,8 +241,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -271,8 +259,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -291,8 +278,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -321,8 +307,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -338,8 +323,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -357,8 +341,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -374,8 +357,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -392,8 +374,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -411,8 +392,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -431,8 +411,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -461,8 +440,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -478,8 +456,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -497,8 +474,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
     - template: ../../run-test-elastictest-template.yml
       parameters:
@@ -514,8 +490,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -532,8 +507,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -551,8 +525,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
@@ -571,8 +544,7 @@ stages:
     continueOnError: false
     pool: ubuntu-20.04
     strategy:
-      matrix:
-        parallel-run: [1, 2, 3, 4, 5]
+      parallel: 5
     steps:
       - template: ../../run-test-elastictest-template.yml
         parameters:
