@@ -142,7 +142,9 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_2
-  dependsOn: Pre_test
+  dependsOn: 
+  - Pre_test
+  - Test_round_1
   condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
   variables:
   - group: SONiC-Elastictest
@@ -259,7 +261,9 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_3
-  dependsOn: Pre_test
+  dependsOn: 
+  - Pre_test
+  - Test_round_2
   condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
   variables:
   - group: SONiC-Elastictest
@@ -376,7 +380,9 @@ stages:
           MGMT_BRANCH: "master"
 
 - stage: Test_round_4
-  dependsOn: Pre_test
+  dependsOn: 
+  - Pre_test
+  - Test_round_3
   condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
   variables:
   - group: SONiC-Elastictest
