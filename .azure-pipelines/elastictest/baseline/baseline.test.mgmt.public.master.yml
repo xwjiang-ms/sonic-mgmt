@@ -26,7 +26,7 @@ stages:
 
 - stage: Test_round_1
   dependsOn: Pre_test
-  condition: and(succeeded('Pre_test'))
+  condition: succeeded('Pre_test')
   variables:
   - group: SONiC-Elastictest
   - name: inventory
