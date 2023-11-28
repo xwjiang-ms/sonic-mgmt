@@ -166,7 +166,7 @@ stages:
   dependsOn: 
   - Pre_test
   - Test_round_1
-  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  condition: and(succeeded(Pre_test), in(dependencies.Pre_test.result, 'Succeeded'), succeededOrFailed(Test_round_1))
   variables:
   - group: SONiC-Elastictest
   - name: inventory
@@ -306,7 +306,7 @@ stages:
   dependsOn: 
   - Pre_test
   - Test_round_2
-  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  condition: and(succeeded(Pre_test), in(dependencies.Pre_test.result, 'Succeeded'), succeededOrFailed(Test_round_2))
   variables:
   - group: SONiC-Elastictest
   - name: inventory
@@ -446,7 +446,7 @@ stages:
   dependsOn: 
   - Pre_test
   - Test_round_3
-  condition: and(succeeded(), in(dependencies.Pre_test.result, 'Succeeded'))
+  condition: and(succeeded(Pre_test), in(dependencies.Pre_test.result, 'Succeeded'), succeededOrFailed(Test_round_3))
   variables:
   - group: SONiC-Elastictest
   - name: inventory
