@@ -5,7 +5,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
   - template: ../run-test-elastictest-template.yml
     parameters:
@@ -24,7 +24,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
   - template: ../run-test-elastictest-template.yml
     parameters:
@@ -45,7 +45,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
   - template: ../run-test-elastictest-template.yml
     parameters:
@@ -64,7 +64,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
     - template: ../run-test-elastictest-template.yml
       parameters:
@@ -84,7 +84,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
     - template: ../run-test-elastictest-template.yml
       parameters:
@@ -105,7 +105,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
     - template: ../run-test-elastictest-template.yml
       parameters:
@@ -127,7 +127,7 @@ jobs:
   continueOnError: false
   pool: ubuntu-20.04
   strategy:
-    parallel: ${{toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM'])}}
+    parallel: toInt(variables['BASELINE_MGMT_PUBLIC_MASTER_TEST_NUM']
   steps:
     - template: ../run-test-elastictest-template.yml
       parameters:
