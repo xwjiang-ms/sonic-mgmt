@@ -51,6 +51,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t0_2vlans_elastictest
     displayName: "kvmtest-t0-2vlans by Elastictest"
@@ -70,6 +71,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t1_lag_elastictest
     displayName: "kvmtest-t1-lag by Elastictest"
@@ -87,6 +89,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: dualtor_elastictest
     displayName: "kvmtest-dualtor-t0 by Elastictest"
@@ -105,6 +108,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
@@ -124,6 +128,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: sonic_t0_elastictest
     displayName: "kvmtest-t0-sonic by Elastictest"
@@ -144,6 +149,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: dpu_elastictest
     displayName: "kvmtest-dpu by Elastictest"
@@ -161,6 +167,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
 - stage: Test_round_2
   dependsOn: 
@@ -191,6 +198,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t0_2vlans_elastictest
     displayName: "kvmtest-t0-2vlans by Elastictest"
@@ -210,6 +218,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t1_lag_elastictest
     displayName: "kvmtest-t1-lag by Elastictest"
@@ -227,6 +236,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: dualtor_elastictest
     displayName: "kvmtest-dualtor-t0 by Elastictest"
@@ -245,6 +255,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
@@ -264,6 +275,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: sonic_t0_elastictest
     displayName: "kvmtest-t0-sonic by Elastictest"
@@ -284,6 +296,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: dpu_elastictest
     displayName: "kvmtest-dpu by Elastictest"
@@ -301,6 +314,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
 - stage: Test_round_3
   dependsOn: 
@@ -331,6 +345,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t0_2vlans_elastictest
     displayName: "kvmtest-t0-2vlans by Elastictest"
@@ -350,6 +365,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t1_lag_elastictest
     displayName: "kvmtest-t1-lag by Elastictest"
@@ -367,6 +383,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: dualtor_elastictest
     displayName: "kvmtest-dualtor-t0 by Elastictest"
@@ -385,6 +402,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
@@ -404,6 +422,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: sonic_t0_elastictest
     displayName: "kvmtest-t0-sonic by Elastictest"
@@ -424,6 +443,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: dpu_elastictest
     displayName: "kvmtest-dpu by Elastictest"
@@ -441,6 +461,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
 - stage: Test_round_4
   dependsOn: 
@@ -471,6 +492,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t0_2vlans_elastictest
     displayName: "kvmtest-t0-2vlans by Elastictest"
@@ -490,6 +512,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: t1_lag_elastictest
     displayName: "kvmtest-t1-lag by Elastictest"
@@ -507,6 +530,7 @@ stages:
         KVM_IMAGE_BRANCH: "master"
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
+        RETRY_TIMES: "0"
 
   - job: dualtor_elastictest
     displayName: "kvmtest-dualtor-t0 by Elastictest"
@@ -525,6 +549,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: multi_asic_elastictest
     displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
@@ -544,6 +569,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: sonic_t0_elastictest
     displayName: "kvmtest-t0-sonic by Elastictest"
@@ -564,6 +590,7 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
 
   - job: dpu_elastictest
     displayName: "kvmtest-dpu by Elastictest"
@@ -581,3 +608,4 @@ stages:
           KVM_IMAGE_BRANCH: "master"
           MGMT_BRANCH: "master"
           BUILD_REASON: "BaselineTest"
+          RETRY_TIMES: "0"
