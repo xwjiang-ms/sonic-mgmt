@@ -1,16 +1,3 @@
-parameters:
-- name: STOP_ON_FAILURE
-  type: string
-  default: "False"
-
-variables:
-- group: SONiC-Elastictest
-- name: inventory
-  value: veos_vtb
-- name: testbed_file
-  value: vtestbed.yaml
-- group: GIT_SECRETS
-
 jobs:
 - job: t0_elastictest
   displayName: "kvmtest-t0 by Elastictest"
@@ -29,7 +16,7 @@ jobs:
       MGMT_BRANCH: "master"
       BUILD_REASON: "BaselineTest"
       RETRY_TIMES: "0"
-      STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+      STOP_ON_FAILURE: "False"
 
 - job: t0_2vlans_elastictest
   displayName: "kvmtest-t0-2vlans by Elastictest"
@@ -50,7 +37,7 @@ jobs:
       MGMT_BRANCH: "master"
       BUILD_REASON: "BaselineTest"
       RETRY_TIMES: "0"
-      STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+      STOP_ON_FAILURE: "False"
 
 - job: t1_lag_elastictest
   displayName: "kvmtest-t1-lag by Elastictest"
@@ -69,7 +56,7 @@ jobs:
       MGMT_BRANCH: "master"
       BUILD_REASON: "BaselineTest"
       RETRY_TIMES: "0"
-      STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+      STOP_ON_FAILURE: "False"
 
 - job: dualtor_elastictest
   displayName: "kvmtest-dualtor-t0 by Elastictest"
@@ -89,7 +76,7 @@ jobs:
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
         RETRY_TIMES: "0"
-        STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+        STOP_ON_FAILURE: "False"
 
 - job: multi_asic_elastictest
   displayName: "kvmtest-multi-asic-t1-lag by Elastictest"
@@ -110,7 +97,7 @@ jobs:
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
         RETRY_TIMES: "0"
-        STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+        STOP_ON_FAILURE: "False"
 
 - job: sonic_t0_elastictest
   displayName: "kvmtest-t0-sonic by Elastictest"
@@ -132,7 +119,7 @@ jobs:
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
         RETRY_TIMES: "0"
-        STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+        STOP_ON_FAILURE: "False"
 
 - job: dpu_elastictest
   displayName: "kvmtest-dpu by Elastictest"
@@ -151,4 +138,4 @@ jobs:
         MGMT_BRANCH: "master"
         BUILD_REASON: "BaselineTest"
         RETRY_TIMES: "0"
-        STOP_ON_FAILURE: ${{parameters.STOP_ON_FAILURE}}
+        STOP_ON_FAILURE: "False"
