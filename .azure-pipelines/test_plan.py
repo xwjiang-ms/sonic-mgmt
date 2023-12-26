@@ -766,7 +766,7 @@ if __name__ == "__main__":
         dest="test_plan_num",
         nargs="?",
         const="",
-        default="",
+        default="1",
         required=False,
         help="Test plan num to be created."
     )
