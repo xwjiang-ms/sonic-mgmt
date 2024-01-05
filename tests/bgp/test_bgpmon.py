@@ -108,6 +108,13 @@ def build_syn_pkt(local_addr, peer_addr):
     return exp_packet
 
 
+def print_db(asichost):
+    config_db = asichost.shell(r'sonic-db-cli CONFIG_DB keys "BGP*"')
+    logger.info("Config DB: {}".format(config_db['stdout']))
+    state_db = asichost.shell(r'sonic-db-cli STATE_DB keys "BGP*"')
+    logger.info("State DB: {}".format(state_db['stdout']))
+
+
 def test_bgpmon(dut_with_default_route, localhost, enum_rand_one_frontend_asic_index,
                 common_setup_teardown, set_timeout_for_bgpmon, ptfadapter, ptfhost):
     """
@@ -131,9 +138,13 @@ def test_bgpmon(dut_with_default_route, localhost, enum_rand_one_frontend_asic_i
     # Load bgp monitor config
     logger.info("Configured bgpmon and verifying packet on {}".format(peer_ports))
     asichost.write_to_config_db(BGPMON_CONFIG_FILE)
+    logger.info("Print db 1st time")
+    print_db(asichost)
     # Verify syn packet on ptf
     (rcvd_port_index, rcvd_pkt) = testutils.verify_packet_any_port(test=ptfadapter, pkt=exp_packet,
                                                                    ports=peer_ports, timeout=BGP_CONNECT_TIMEOUT)
+    logger.info("Print db 2nd time")
+    print_db(asichost)
     # ip as BGMPMON IP , mac as the neighbor mac(mac for default nexthop that was used for sending syn packet) ,
     # add the neighbor entry and the default route for dut loopback
     ptf_interface = "eth" + str(peer_ports[rcvd_port_index])
