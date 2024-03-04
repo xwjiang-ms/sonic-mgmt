@@ -231,3 +231,4 @@ def test_ro_disk(localhost, ptfhost, duthosts, enum_rand_one_per_hwsku_hostname,
         do_reboot(duthost, localhost, duthosts)
         logger.debug("  END: reboot {} to restore disk RW state".
                      format(enum_rand_one_per_hwsku_hostname))
+        duthost.fetch(src='/var/log/syslog', dest='logs/', flat=True)
