@@ -222,7 +222,7 @@ class AnsibleLogAnalyzer:
         while wait_time <= timeout:
             # look for marker in syslog file
             if os.path.exists(syslog_file):
-                with open(syslog_file, 'r') as fp:
+                with open(syslog_file, 'r', encoding='utf-8', errors="replace") as fp:
                     # resume from last search position
                     if last_check_pos:
                         fp.seek(last_check_pos)
