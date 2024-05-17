@@ -349,6 +349,7 @@ class TestPlanManager(object):
         print("Polling progress and status of test plan at {}/scheduler/testplan/{}"
               .format(self.frontend_url, test_plan_id))
         print("Polling interval: {} seconds".format(interval))
+        sys.exit(3)
 
         poll_url = "{}/test_plan/{}".format(self.url, test_plan_id)
         headers = {
@@ -429,7 +430,6 @@ class TestPlanManager(object):
 
 
 if __name__ == "__main__":
-    sys.exit(3)
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Tool for managing test plan.")
