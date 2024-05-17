@@ -429,6 +429,7 @@ class TestPlanManager(object):
 
 
 if __name__ == "__main__":
+    sys.exit(3)
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="Tool for managing test plan.")
