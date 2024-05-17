@@ -240,7 +240,10 @@ steps:
           echo -e "\033[33mfor detailed test plan progress \033[0m"
           # When "LOCK_TESTBED" finish, it changes into "PREPARE_TESTBED"
           echo "[test_plan.py] poll LOCK_TESTBED status"
-          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state LOCK_TESTBED || ((failure_count++))
+          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state LOCK_TESTBED
+          if [ "$(scriptFailed)" == "true" ]; then
+            failure_count++
+          fi
       done
 
       echo "$failure_count test plan fails"
