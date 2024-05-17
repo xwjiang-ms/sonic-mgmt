@@ -349,8 +349,7 @@ class TestPlanManager(object):
         print("Polling progress and status of test plan at {}/scheduler/testplan/{}"
               .format(self.frontend_url, test_plan_id))
         print("Polling interval: {} seconds".format(interval))
-        sys.exit(3)
-
+        raise Exception("test poll failure")
         poll_url = "{}/test_plan/{}".format(self.url, test_plan_id)
         headers = {
             "Content-Type": "application/json"
@@ -942,4 +941,4 @@ if __name__ == "__main__":
         sys.exit(0)
     except Exception as e:
         print("Operation failed with exception: {}".format(repr(e)))
-        sys.exit(3)
+        # sys.exit(3)
