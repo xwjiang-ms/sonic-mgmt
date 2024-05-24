@@ -236,7 +236,6 @@ steps:
 
       echo -e "\033[33mSONiC PR system-level test is powered by SONiC Elastictest, for any issue, please send email to sonicelastictest@microsoft.com \033[0m"
       IFS=',' read -ra TEST_PLAN_ID_LIST <<< "$TEST_PLAN_ID_LIST_STRING"
-      failure_count=0
       for TEST_PLAN_ID in "${TEST_PLAN_ID_LIST[@]}"
       do
           echo -e -n "\033[33mPlease visit Elastictest page \033[0m"
@@ -244,13 +243,9 @@ steps:
           echo -e "\033[33mfor detailed test plan progress \033[0m"
           # When "LOCK_TESTBED" finish, it changes into "PREPARE_TESTBED"
           echo "[test_plan.py] poll LOCK_TESTBED status"
-          (python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state LOCK_TESTBED || ((failure_count++)))
+          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state LOCK_TESTBED || true
       done
 
-      echo "$failure_count test plan fails"
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
-          exit 3
-      fi
     displayName: "Lock testbed"
 
   - script: |
@@ -260,7 +255,6 @@ steps:
 
       echo -e "\033[33mSONiC PR system-level test is powered by SONiC Elastictest, for any issue, please send email to sonicelastictest@microsoft.com \033[0m"
       IFS=',' read -ra TEST_PLAN_ID_LIST <<< "$TEST_PLAN_ID_LIST_STRING"
-      failure_count=0
       for TEST_PLAN_ID in "${TEST_PLAN_ID_LIST[@]}"
       do
           echo -e -n "\033[33mPlease visit Elastictest page \033[0m"
@@ -268,12 +262,9 @@ steps:
           echo -e "\033[33mfor detailed test plan progress \033[0m"
           # When "PREPARE_TESTBED" finish, it changes into "EXECUTING"
           echo "[test_plan.py] poll PREPARE_TESTBED status"
-          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state PREPARE_TESTBED || ((failure_count++))
+          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state PREPARE_TESTBED
       done
 
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
-          exit 3
-      fi
     displayName: "Prepare testbed"
 
   - script: |
@@ -282,7 +273,6 @@ steps:
 
       echo -e "\033[33mSONiC PR system-level test is powered by SONiC Elastictest, for any issue, please send email to sonicelastictest@microsoft.com \033[0m"
       IFS=',' read -ra TEST_PLAN_ID_LIST <<< "$TEST_PLAN_ID_LIST_STRING"
-      failure_count=0
       for TEST_PLAN_ID in "${TEST_PLAN_ID_LIST[@]}"
       do
           echo -e -n "\033[33mPlease visit Elastictest page \033[0m"
@@ -290,12 +280,9 @@ steps:
           echo -e "\033[33mfor detailed test plan progress \033[0m"
           # When "EXECUTING" finish, it changes into "KVMDUMP", "FAILED", "CANCELLED" or "FINISHED"
           echo "[test_plan.py] poll EXECUTING status"
-          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state EXECUTING --expected-result ${{ parameters.EXPECTED_RESULT }} || ((failure_count++))
+          python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state EXECUTING --expected-result ${{ parameters.EXPECTED_RESULT }}
       done
 
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
-          exit 3
-      fi
     displayName: "Run test"
     timeoutInMinutes: ${{ parameters.MAX_RUN_TEST_MINUTES }}
 
