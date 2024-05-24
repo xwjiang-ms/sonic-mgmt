@@ -302,6 +302,7 @@ steps:
           echo "[test_plan.py] poll EXECUTING status"
           python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state EXECUTING --expected-result ${{ parameters.EXPECTED_RESULT }} || true
           RET=$?
+          echo $RET
           if [ $RET -ne 0 ]; then
               failure_count++
           fi
