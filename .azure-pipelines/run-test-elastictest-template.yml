@@ -248,7 +248,7 @@ steps:
           RET=$?
           echo $RET
           if [ $RET -ne 0 ]; then
-              (failure_count++)
+              ((failure_count++))
           fi
       done
 
@@ -277,7 +277,7 @@ steps:
           RET=$?
           echo $RET
           if [ $RET -ne 0 ]; then
-              (failure_count++)
+              ((failure_count++))
           fi
       done
 
@@ -306,7 +306,7 @@ steps:
           RET=$?
           echo $RET
           if [ $RET -ne 0 ]; then
-              (failure_count++)
+              ((failure_count++))
           fi
       done
 
