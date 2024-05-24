@@ -247,12 +247,12 @@ steps:
           python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state LOCK_TESTBED
 
           echo $RET
-          if [ $RET -ne 0 ]; then
+          if [[ $RET -ne 0 ]]; then
               ((failure_count++))
           fi
       done
 
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
+      if [[ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]]; then
           echo "All testplan failed, cancel following steps"
           exit 3
       fi
@@ -276,12 +276,12 @@ steps:
           python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state PREPARE_TESTBED
 
           echo $RET
-          if [ $RET -ne 0 ]; then
+          if [[ $RET -ne 0 ]]; then
               ((failure_count++))
           fi
       done
 
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
+      if [[ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]]; then
           echo "All testplan failed, cancel following steps"
           exit 3
       fi
@@ -305,12 +305,12 @@ steps:
           python ./.azure-pipelines/test_plan.py poll -i $TEST_PLAN_ID --expected-state EXECUTING --expected-result ${{ parameters.EXPECTED_RESULT }}
 
           echo $RET
-          if [ $RET -ne 0 ]; then
+          if [[ $RET -ne 0 ]]; then
               ((failure_count++))
           fi
       done
 
-      if [ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]; then
+      if [[ $failure_count -eq ${#TEST_PLAN_ID_LIST[@]} ]]; then
           echo "All testplan failed, cancel following steps"
           exit 3
       fi
