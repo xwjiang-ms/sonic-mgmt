@@ -290,8 +290,8 @@ vm_host_1:
   hosts:
     STR-ACS-VSERV-01:
       ansible_host: 172.17.0.1
-      ansible_user: xiaweijiang
-      vm_host_user: xiaweijiang
+      ansible_user: AzDevOps
+      vm_host_user: AzDevOps
 
 vms_1:
   hosts:
